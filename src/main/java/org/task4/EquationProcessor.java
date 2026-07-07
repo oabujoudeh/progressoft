@@ -1,11 +1,7 @@
 package org.task4;
-
 import org.task2.DynamicStack;
 import org.task2.StackInterface;
-
 import java.util.Scanner;
-
-
 public class EquationProcessor {
 
     private StackInterface operands;
