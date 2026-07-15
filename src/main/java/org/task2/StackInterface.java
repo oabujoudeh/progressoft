@@ -1,12 +1,14 @@
 package org.task2;
 
-public interface StackInterface {
+// Generified from a String-only stack to StackInterface<T> so callers (e.g. task4's
+// EquationProcessor) can store real typed values (Double) instead of parsing to/from String.
+public interface StackInterface<T> {
 
-    void push(String item);
+    void push(T item);
 
-    String pop();
+    T pop();
 
-    String peek();
+    T peek();
 
     int size();
 

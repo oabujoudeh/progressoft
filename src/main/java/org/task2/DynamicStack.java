@@ -1,19 +1,23 @@
 package org.task2;
 
-public class DynamicStack implements StackInterface {
+public class DynamicStack<T> implements StackInterface<T> {
 
-    private String[] data;
+    private T[] data;
     private int top;
     private int capacity;
 
+    // Array of a generic type can't be created directly in Java, so it's built as
+    // Object[] and cast; this is confined to the class internals and is type-safe from
+    // the outside since push/pop only ever store/return T.
+    @SuppressWarnings("unchecked")
     public DynamicStack() {
         this.capacity = 5;
         this.top = -1;
-        this.data = new String[capacity];
+        this.data = (T[]) new Object[capacity];
     }
 
     @Override
-    public void push(String item) {
+    public void push(T item) {
         if (top == capacity - 1) {
             resize();
         }
@@ -22,9 +26,10 @@ public class DynamicStack implements StackInterface {
         data[top] = item;
     }
 
+    @SuppressWarnings("unchecked")
     private void resize() {
         int newCapacity = capacity * 2;
-        String[] newData = new String[newCapacity];
+        T[] newData = (T[]) new Object[newCapacity];
 
         for (int i = 0; i < data.length; i++) {
             newData[i] = data[i];
@@ -35,18 +40,18 @@ public class DynamicStack implements StackInterface {
     }
 
     @Override
-    public String pop() {
+    public T pop() {
         if (isEmpty()) {
             throw new RuntimeException("Stack is empty");
         }
 
-        String temp = data[top];
+        T temp = data[top];
         top--;
         return temp;
     }
 
     @Override
-    public String peek() {
+    public T peek() {
         if (isEmpty()) {
             throw new RuntimeException("Stack is empty");
         }

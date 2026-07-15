@@ -19,37 +19,36 @@ public class StringStatisticsCollector implements StatisticsCollector<String, St
         int wordCount = 0;
         int numberCount = 0;
 
-
-
         for (String object : objects){
-            if (!object.trim().isEmpty()) {
+            // single pass per string instead of 3 separate scans (char loop + "\\s+" split +
+            // "\\D+" split); word/number boundaries are tracked with two small state flags.
+            boolean inWord = false;
+            boolean inNumber = false;
 
-                String[] words = object.trim().split("\\s+");
-
-                wordCount += words.length;
-
-            }
-
-            String[] numbers = object.split("\\D+");
-
-            for (String number : numbers) {
-
-                if (!number.isEmpty()) {
-                    numberCount++;
-                }
-
-            }
             for (int i = 0 ; i < object.length(); i++){
-                if (Character.isUpperCase(object.charAt(i))){
-                    upperCaseCount ++;
-                }
-                if (Character.isLowerCase(object.charAt(i))){
-                    lowerCaseCount ++;
-                }
                 char current = object.charAt(i);
-                if (!Character.isLetterOrDigit(current) && ! Character.isWhitespace(current)){
+
+                if (Character.isUpperCase(current)){
+                    upperCaseCount++;
+                }
+                if (Character.isLowerCase(current)){
+                    lowerCaseCount++;
+                }
+                if (!Character.isLetterOrDigit(current) && !Character.isWhitespace(current)){
                     nonWordCount++;
                 }
+
+                boolean whitespace = Character.isWhitespace(current);
+                if (!whitespace && !inWord) {
+                    wordCount++;
+                }
+                inWord = !whitespace;
+
+                boolean digit = Character.isDigit(current);
+                if (digit && !inNumber) {
+                    numberCount++;
+                }
+                inNumber = digit;
             }
         }
 

@@ -2,9 +2,10 @@ package org.task3;
 
 public class Node {
 
-    int data;
-    Node left;
-    Node right;
+    // was package-private; nothing outside Node should be able to mutate the tree structure directly
+    private int data;
+    private Node left;
+    private Node right;
 
     public Node(int data){
         this.data = data;
@@ -13,23 +14,18 @@ public class Node {
     }
 
     public boolean accept(int value) {
-
+        // value/this.data are ints, so exactly one of ==, <, > is true;
+        // rewritten as if/else-if/else so there's no unreachable trailing branch
         if (value == this.data) {
             return false;
-        }
-
-        if (value < this.data) {
-
+        } else if (value < this.data) {
             if (left == null) {
                 left = new Node(value);
                 return true;
             }
 
             return left.accept(value);
-        }
-
-        if (value > this.data) {
-
+        } else {
             if (right == null) {
                 right = new Node(value);
                 return true;
@@ -37,31 +33,23 @@ public class Node {
 
             return right.accept(value);
         }
-
-        return false;
     }
 
     public int depth(int value, int level){
         if (value == this.data){
             return level;
-        }
+        } else if (value < this.data){
+            if (left == null){
+                return -1;
+            }
 
-        if (value < this.data){
-           if (left == null){
-               return -1;
-           }
-
-           return left.depth(value, level+1);
-        }
-
-        if (value > this.data){
+            return left.depth(value, level+1);
+        } else {
             if (right == null){
                 return -1;
             }
             return right.depth(value, level+1);
         }
-
-        return -1;
     }
 
     public int treeDepth(){

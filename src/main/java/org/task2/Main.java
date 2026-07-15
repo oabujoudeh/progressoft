@@ -6,7 +6,8 @@ public class Main {
         // =====================
         // FIXED STACK
         // =====================
-        StackInterface fixedStack = new FixedStack(5);
+        // stacks are now generic; declared with <String> since that's what this demo pushes
+        StackInterface<String> fixedStack = new FixedStack<>(5);
 
         fixedStack.push("A");
         fixedStack.push("B");
@@ -34,7 +35,7 @@ public class Main {
         // =====================
         // DYNAMIC STACK
         // =====================
-        StackInterface dynamicStack = new DynamicStack();
+        StackInterface<String> dynamicStack = new DynamicStack<>();
 
         dynamicStack.push("A");
         dynamicStack.push("B");

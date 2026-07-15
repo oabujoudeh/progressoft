@@ -1,19 +1,22 @@
 package org.task2;
 
-public class FixedStack implements StackInterface {
+// Generified alongside StackInterface/DynamicStack so both stack implementations
+// stay interchangeable through the same typed interface.
+public class FixedStack<T> implements StackInterface<T> {
 
-    private String[] data;
+    private T[] data;
     private int top;
     private int capacity;
 
+    @SuppressWarnings("unchecked")
     public FixedStack(int capacity) {
         this.capacity = capacity;
         this.top = -1;
-        this.data = new String[capacity];
+        this.data = (T[]) new Object[capacity];
     }
 
     @Override
-    public void push(String item) {
+    public void push(T item) {
         if (top == capacity - 1) {
             throw new RuntimeException("Stack is full");
         }
@@ -22,18 +25,18 @@ public class FixedStack implements StackInterface {
     }
 
     @Override
-    public String pop() {
+    public T pop() {
         if (isEmpty()) {
             throw new RuntimeException("Stack is empty");
         }
 
-        String temp = data[top];
+        T temp = data[top];
         top--;
         return temp;
     }
 
     @Override
-    public String peek() {
+    public T peek() {
         if (isEmpty()) {
             throw new RuntimeException("Stack is empty");
         }

@@ -4,16 +4,22 @@ import org.task2.StackInterface;
 import java.util.Scanner;
 public class EquationProcessor {
 
-    private StackInterface operands;
-    private StackInterface operators;
-    private java.util.HashMap<String, String> variables;
+    // operands now hold Double directly instead of String, removing the constant
+    // Double.parseDouble/String.valueOf round-tripping the old String-typed stack forced.
+    // operators stays String-typed since it also carries the "(" sentinel, which isn't an Operator.
+    private StackInterface<Double> operands;
+    private StackInterface<String> operators;
+    private java.util.HashMap<String, Double> variables;
     private Scanner scanner;
 
-    public EquationProcessor() {
-        operands = new DynamicStack();
-        operators = new DynamicStack();
+    // Scanner is now passed in instead of created here, so Main's Scanner and this one
+    // share a single buffer over System.in (two Scanners on the same stream can silently
+    // drop/duplicate input).
+    public EquationProcessor(Scanner scanner) {
+        operands = new DynamicStack<>();
+        operators = new DynamicStack<>();
         variables = new java.util.HashMap<>();
-        scanner = new Scanner(System.in);
+        this.scanner = scanner;
     }
 
     public double process(String equation) {
@@ -24,19 +30,16 @@ public class EquationProcessor {
 
             char current = equation.charAt(i);
 
-            if (Character.isDigit(current)) {
+            // '.' accepted alongside digits so decimal literals (e.g. "3.5") parse correctly
+            if (Character.isDigit(current) || current == '.') {
                 currentNumber = currentNumber + current;
             }
 
-            else if (current == '+' ||
-                    current == '-' ||
-                    current == '*' ||
-                    current == '/' ||
-                    current == '^') {
+            else if (ArithmeticOperator.isOperatorSymbol(current)) {
 
 
                 if (!currentNumber.equals("")) {
-                    operands.push(currentNumber);
+                    operands.push(Double.parseDouble(currentNumber));
                     currentNumber = "";
                 }
 
@@ -60,7 +63,7 @@ public class EquationProcessor {
             else if (current == ')') {
 
                 if (!currentNumber.equals("")) {
-                    operands.push(currentNumber);
+                    operands.push(Double.parseDouble(currentNumber));
                     currentNumber = "";
                 }
 
@@ -81,7 +84,7 @@ public class EquationProcessor {
 
                 if (!variables.containsKey(variableName)) {
                     System.out.print("Enter value for " + variableName + ": ");
-                    String value = scanner.nextLine();
+                    double value = Double.parseDouble(scanner.nextLine());
                     variables.put(variableName, value);
                 }
 
@@ -91,7 +94,7 @@ public class EquationProcessor {
         }
 
         if (!currentNumber.equals("")) {
-            operands.push(currentNumber);
+            operands.push(Double.parseDouble(currentNumber));
 
         }
 
@@ -104,22 +107,15 @@ public class EquationProcessor {
             calculateTop();
         }
 
-        return Double.parseDouble(operands.pop());
+        return operands.pop();
 
 
     }
 
     private int priority(String operator){
-        if (operator.equals("^")) {
-            return 3;
-        }
-        if (operator.equals("*") || operator.equals("/")){
-            return 2;
-        }
-        if (operator.equals("+") || operator.equals("-")){
-            return 1;
-        }
-        return 0;
+        // '(' is never passed here: the while-loop above short-circuits on
+        // !operators.peek().equals("(") before priority(operators.peek()) is evaluated.
+        return ArithmeticOperator.fromSymbol(operator).priority();
     }
 
     private void calculateTop(){
@@ -129,31 +125,14 @@ public class EquationProcessor {
         if (operands.size() <2){
             throw new IllegalArgumentException("Invalid equation: missing operand");
         }
-        String operator = operators.pop();
-        String rightString = operands.pop();
-        String leftString = operands.pop();
+        String operatorSymbol = operators.pop();
+        double right = operands.pop();
+        double left = operands.pop();
 
-        double right = Double.parseDouble(rightString);
-        double left = Double.parseDouble(leftString);
+        // operator resolves and applies itself polymorphically; no more if/else-if chain
+        double result = ArithmeticOperator.fromSymbol(operatorSymbol).apply(left, right);
 
-        double result = 0;
-
-        if (operator.equals("+")){
-            result = left + right;
-        } else if (operator.equals("-")){
-            result = left - right;
-        } else if (operator.equals("^")) {
-            result = Math.pow(left,right);
-        } else if (operator.equals("*")) {
-            result = left * right;
-        } else if (operator.equals("/")){
-            if (right==0){
-                throw new ArithmeticException("Invalid equation: cannot divide by zero");
-            }
-            result = left / right;
-        }
-
-        operands.push(String.valueOf(result));
+        operands.push(result);
     }
 
 }
